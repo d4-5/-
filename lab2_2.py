@@ -1,19 +1,20 @@
 from math import cos, sin, pi, sqrt, atan
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 
 def calculate_coefficients(signal):
     N = len(signal)
-    coeffiecients = []
+    coefficients = []
     A0 = 1/N * sum(signal[i] for i in range(N))
     B0 = 0
-    coeffiecients.append((A0, B0))
+    coefficients.append((A0, B0))
     for k in range(1, N//2 + 1):
         A = 1/N * sum(signal[i]*cos(2*pi*k*i/N) for i in range(N))
         B = 1/N * sum(signal[i]*sin(2*pi*k*i/N) for i in range(N))
-        coeffiecients.append((A, B))
-    return coeffiecients
+        coefficients.append((A, B))
+    return coefficients
 
 
 def calculate_phases_and_amplitudes(coefficients):
@@ -46,22 +47,23 @@ def plot_amplitudes_and_phases(amplitudes, phases):
              basefmt=" ", label="arg(C_k)")
     plt.title("Спектр фаз")
     plt.xlabel("k")
-    plt.ylabel("Амплітуда")
+    plt.ylabel("Фаза")
     plt.grid(True)
     plt.legend()
     plt.show()
 
 
 def s(t, amplitudes, phases, Tc):
-    s = amplitudes[0]
+    s = amplitudes[0]/2
     for i in range(1, len(amplitudes) - 1):
-        s += 2*amplitudes[i]*cos(2*i*pi*t/Tc + phases[i])
+        s += 2*amplitudes[i] * cos(2 * i * pi * t / Tc - phases[i])
+    s += amplitudes[-1] * cos(2 * (len(amplitudes) - 1)
+                              * pi * t / Tc + phases[-1])
 
-    s += amplitudes[-1] * cos(2*(len(amplitudes) - 1)*pi*t/Tc + phases[-1])
     return s
 
 
-def plot_singla(amplitudes, phases, Tc):
+def plot_signal(amplitudes, phases, Tc):
     t_values = np.linspace(0, Tc, 500)
 
     s_values = [s(t, amplitudes, phases, Tc) for t in t_values]
@@ -98,6 +100,15 @@ def print_table_and_formula(amplitudes, phases, Tc):
           (len(amplitudes) - 1)}*pi*t/Tc + {phases[-1]:.4f})")
 
 
+def save_coefficients(coefficients, filename):
+    data = {
+        "coefficients": [{"A": A, "B": B} for A, B in coefficients]
+    }
+
+    with open(filename, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+
+
 def main():
     Tc = 1
     n = 5
@@ -108,14 +119,14 @@ def main():
         signal[i] = int(signal[i])
 
     print(f"Signal : {signal}")
-
     coefficients = calculate_coefficients(signal)
     for i, (A, B) in enumerate(coefficients):
         print(f"C{i} = {A} + i*{B}")
     amplitudes, phases = calculate_phases_and_amplitudes(coefficients)
     print_table_and_formula(amplitudes, phases, Tc)
     plot_amplitudes_and_phases(amplitudes, phases)
-    plot_singla(amplitudes, phases, Tc)
+    plot_signal(amplitudes, phases, Tc)
+    save_coefficients(coefficients, "coefficients.json")
 
 
 if __name__ == "__main__":
