@@ -1,4 +1,4 @@
-from math import cos, sin, pi, sqrt, atan
+from math import cos, sin, pi, sqrt, atan2
 import numpy as np
 import matplotlib.pyplot as plt
 import json
@@ -23,7 +23,7 @@ def calculate_phases_and_amplitudes(coefficients):
 
     for A, B in coefficients:
         C = sqrt(A**2 + B**2)
-        phi = atan(B/A)
+        phi = atan2(B, A)
 
         amplitudes.append(C)
         phases.append(phi)
@@ -54,12 +54,22 @@ def plot_amplitudes_and_phases(amplitudes, phases):
 
 
 def s(t, amplitudes, phases, Tc):
-    s = amplitudes[0]/2
-    for i in range(1, len(amplitudes) - 1):
-        s += 2*amplitudes[i] * cos(2 * i * pi * t / Tc - phases[i])
-    s += amplitudes[-1] * cos(2 * (len(amplitudes) - 1)
-                              * pi * t / Tc + phases[-1])
+    extend_amplitudes = []
+    extend_phases = []
 
+    for i in range(len(amplitudes) - 2, 0, -1):
+        a = amplitudes[i]
+        p = phases[i]
+        extend_amplitudes.append(a)
+        extend_phases.append(-p)
+    new_amplitudes = amplitudes.copy()
+    new_phases = phases.copy()
+    new_amplitudes.extend(extend_amplitudes)
+    new_phases.extend(extend_phases)
+
+    s = 0
+    for i in range(len(new_amplitudes)):
+        s += new_amplitudes[i]*cos(2*pi*i*t + new_phases[i])
     return s
 
 
@@ -79,7 +89,7 @@ def plot_signal(amplitudes, phases, Tc):
 
 
 def print_table_and_formula(amplitudes, phases, Tc):
-    t_values = np.linspace(0, Tc, 8)
+    t_values = np.linspace(0, Tc, 9)
     s_values = [s(t, amplitudes, phases, Tc) for t in t_values]
 
     for i in t_values:
@@ -89,7 +99,7 @@ def print_table_and_formula(amplitudes, phases, Tc):
         print("-", end="")
     print()
     for i in s_values:
-        print(f"{i:.5f} | ", end="")
+        print(f"{i} | ", end="")
     print()
 
     print(f"s(t) = {amplitudes[0]}", end="")

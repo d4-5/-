@@ -25,7 +25,7 @@ def calculate_signal(coefficients):
             angle = 2 * pi * k * i / len(coefficients)
             s += A * cos(angle) + B * sin(angle)
 
-        s = (abs(round(s, 1)))
+        # s = (abs(round(s, 1)))
         signal.append(s)
 
     return signal
