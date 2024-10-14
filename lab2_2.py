@@ -69,7 +69,7 @@ def s(t, amplitudes, phases, Tc):
 
     s = 0
     for i in range(len(new_amplitudes)):
-        s += new_amplitudes[i]*cos(2*pi*i*t + new_phases[i])
+        s += new_amplitudes[i]*cos(2*pi*i*t - new_phases[i])
     return s
 
 
@@ -99,7 +99,7 @@ def print_table_and_formula(amplitudes, phases, Tc):
         print("-", end="")
     print()
     for i in s_values:
-        print(f"{i} | ", end="")
+        print(f"{i:.5f} | ", end="")
     print()
 
     print(f"s(t) = {amplitudes[0]}", end="")
